@@ -20,11 +20,11 @@ struct Board {
     grid: [[Cell; 3]; 3],
     highlighted: Option<(usize, usize)>,
 }
-enum DIR {
-    LEFT,
-    RIGHT,
-    UP,
-    DOWN,
+enum Dir {
+    Left,
+    Right,
+    Up,
+    Down,
 }
 impl Board {
     fn modify(&mut self, x: usize, y: usize, set: State) {
@@ -34,19 +34,20 @@ impl Board {
         self.grid[x][y].highlighted = true;
         self.highlighted = Some((x, y));
     }
-    fn move_highlight(&mut self, dir: DIR) -> Result<(), String> {
+    fn move_highlight(&mut self, dir: Dir) -> Result<(), String> {
         self.highlighted
             .map_or(Err("no previous value".to_string()), |(mut x, mut y)| {
-                Ok({
+                {
                     self.grid[x][y].highlighted = false;
                     match dir {
-                        DIR::DOWN => y = (y + 1) % 3,
-                        DIR::UP => y = (y + 2) % 3,
-                        DIR::RIGHT => x = (x + 1) % 3,
-                        DIR::LEFT => x = (x + 2) % 3,
+                        Dir::Down => y = (y + 1) % 3,
+                        Dir::Up => y = (y + 2) % 3,
+                        Dir::Right => x = (x + 1) % 3,
+                        Dir::Left => x = (x + 2) % 3,
                     }
                     self.highlight(x, y)
-                })
+                }
+                Ok(())
             })
     }
     fn do_move(&mut self, stdin: &mut termion::input::Keys<termion::AsyncReader>, state: State) {
@@ -72,10 +73,10 @@ impl Board {
         loop {
             if let Some(Ok(key)) = stdin.next() {
                 self.move_highlight(match key {
-                    Key::Char('w') => DIR::UP,
-                    Key::Char('a') => DIR::LEFT,
-                    Key::Char('s') => DIR::DOWN,
-                    Key::Char('d') => DIR::RIGHT,
+                    Key::Char('w') => Dir::Up,
+                    Key::Char('a') => Dir::Left,
+                    Key::Char('s') => Dir::Down,
+                    Key::Char('d') => Dir::Right,
                     Key::Char('\n') => {
                         return self.highlighted;
                     }
